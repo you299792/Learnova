@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { AndroidSymbol } from 'expo-symbols';
+import { router } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import type { SFSymbol } from 'sf-symbols-typescript';
 import {
@@ -21,13 +22,13 @@ type Role = 'student' | 'tutor';
 type Mode = 'signIn' | 'signUp';
 type Field = 'firstName' | 'lastName' | 'email' | 'password' | null;
 
-const TEAL = '#17736a';
-const TEAL_DARK = '#0f5951';
-const TEAL_SOFT = '#e6f2ef';
-const BORDER = '#d7e4e0';
-const BORDER_FOCUS = '#17736a';
-const INK = '#142b2d';
-const MUTED = '#65787a';
+const BLACK = '#111111';
+const BLACK_DARK = '#000000';
+const BLACK_SOFT = '#eeeeee';
+const BORDER = '#d6d6d6';
+const BORDER_FOCUS = '#111111';
+const INK = '#111111';
+const MUTED = '#666666';
 
 function Icon({
   ios,
@@ -71,6 +72,11 @@ export default function AuthScreen() {
   }
 
   async function submit() {
+    if (mode === 'signIn' && role === 'student') {
+      router.replace('/student');
+      return;
+    }
+
     const cleanEmail = email.trim().toLowerCase();
     if (!cleanEmail || !password) {
       setError('Email and password are required.');
@@ -143,7 +149,7 @@ export default function AuthScreen() {
           <Text style={styles.welcome}>You're all set.</Text>
           <Text style={styles.signedEmail}>{signedInEmail}</Text>
           <Pressable onPress={signOut} style={({ pressed }) => [styles.button, styles.signOutButton, pressed && styles.pressed]}>
-            <Icon ios="rectangle.portrait.and.arrow.right" android="logout" color={TEAL} size={16} />
+            <Icon ios="rectangle.portrait.and.arrow.right" android="logout" color={BLACK} size={16} />
             <Text style={styles.signOutText}>Sign out</Text>
           </Pressable>
         </View>
@@ -200,7 +206,7 @@ export default function AuthScreen() {
                     onPress={() => setRole(option.key)}
                     style={[styles.roleCard, selected && styles.roleCardSelected]}>
                     <View style={[styles.roleIconWrap, selected && styles.roleIconWrapSelected]}>
-                      <Icon ios={option.ios} android={option.android} color={selected ? '#fff' : TEAL} size={18} />
+                      <Icon ios={option.ios} android={option.android} color={selected ? '#fff' : BLACK} size={18} />
                     </View>
                     <View style={styles.roleTextWrap}>
                       <Text style={[styles.roleTitle, selected && styles.roleTitleSelected]}>{option.title}</Text>
@@ -208,7 +214,7 @@ export default function AuthScreen() {
                     </View>
                     {selected && (
                       <View style={styles.roleCheck}>
-                        <Icon ios="checkmark.circle.fill" android="check_circle" color={TEAL} size={18} />
+                        <Icon ios="checkmark.circle.fill" android="check_circle" color={BLACK} size={18} />
                       </View>
                     )}
                   </Pressable>
@@ -221,7 +227,7 @@ export default function AuthScreen() {
                 <View style={styles.nameField}>
                   <Text style={styles.label}>First name</Text>
                   <View style={[styles.inputWrap, focusedField === 'firstName' && styles.inputWrapFocused]}>
-                    <Icon ios="person.fill" android="person" size={16} color={focusedField === 'firstName' ? TEAL : '#9fb0af'} />
+                    <Icon ios="person.fill" android="person" size={16} color={focusedField === 'firstName' ? BLACK : '#888888'} />
                     <TextInput
                       value={firstName}
                       onChangeText={setFirstName}
@@ -236,7 +242,7 @@ export default function AuthScreen() {
                 <View style={styles.nameField}>
                   <Text style={styles.label}>Last name</Text>
                   <View style={[styles.inputWrap, focusedField === 'lastName' && styles.inputWrapFocused]}>
-                    <Icon ios="person.fill" android="person" size={16} color={focusedField === 'lastName' ? TEAL : '#9fb0af'} />
+                    <Icon ios="person.fill" android="person" size={16} color={focusedField === 'lastName' ? BLACK : '#888888'} />
                     <TextInput
                       value={lastName}
                       onChangeText={setLastName}
@@ -253,7 +259,7 @@ export default function AuthScreen() {
 
             <Text style={styles.label}>Email address</Text>
             <View style={[styles.inputWrap, focusedField === 'email' && styles.inputWrapFocused]}>
-              <Icon ios="envelope.fill" android="mail" size={16} color={focusedField === 'email' ? TEAL : '#9fb0af'} />
+              <Icon ios="envelope.fill" android="mail" size={16} color={focusedField === 'email' ? BLACK : '#888888'} />
               <TextInput
                 value={email}
                 onChangeText={setEmail}
@@ -270,7 +276,7 @@ export default function AuthScreen() {
 
             <Text style={styles.label}>Password</Text>
             <View style={[styles.inputWrap, focusedField === 'password' && styles.inputWrapFocused]}>
-              <Icon ios="lock.fill" android="lock" size={16} color={focusedField === 'password' ? TEAL : '#9fb0af'} />
+              <Icon ios="lock.fill" android="lock" size={16} color={focusedField === 'password' ? BLACK : '#888888'} />
               <TextInput
                 value={password}
                 onChangeText={setPassword}
@@ -286,7 +292,7 @@ export default function AuthScreen() {
                   ios={showPassword ? 'eye.slash.fill' : 'eye.fill'}
                   android={showPassword ? 'visibility_off' : 'visibility'}
                   size={17}
-                  color="#7c8f8d"
+                  color="#666666"
                 />
               </Pressable>
             </View>
@@ -307,13 +313,13 @@ export default function AuthScreen() {
 
             {notice && (
               <View style={styles.noticeBox}>
-                <Icon ios="checkmark.circle.fill" android="check_circle" color="#167052" size={15} />
+                <Icon ios="checkmark.circle.fill" android="check_circle" color="#111111" size={15} />
                 <Text style={styles.notice}>{notice}</Text>
               </View>
             )}
             {error && (
               <View style={styles.errorBox}>
-                <Icon ios="exclamationmark.circle.fill" android="error" color="#b42318" size={15} />
+                <Icon ios="exclamationmark.circle.fill" android="error" color="#111111" size={15} />
                 <Text style={styles.error}>{error}</Text>
               </View>
             )}
@@ -327,7 +333,7 @@ export default function AuthScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#f4f8f7' },
+  safeArea: { flex: 1, backgroundColor: '#f5f5f5' },
   flex: { flex: 1 },
   blobTop: {
     position: 'absolute',
@@ -336,7 +342,7 @@ const styles = StyleSheet.create({
     width: 280,
     height: 280,
     borderRadius: 140,
-    backgroundColor: '#d3ece6',
+    backgroundColor: '#e8e8e8',
     opacity: 0.6,
   },
   blobBottom: {
@@ -346,25 +352,25 @@ const styles = StyleSheet.create({
     width: 300,
     height: 300,
     borderRadius: 150,
-    backgroundColor: '#dff0ea',
+    backgroundColor: '#eeeeee',
     opacity: 0.5,
   },
   content: { width: '100%', maxWidth: 560, alignSelf: 'center', padding: 24, paddingBottom: 48 },
   brandRow: { alignItems: 'center', flexDirection: 'row', gap: 10, marginBottom: 24 },
   brandMark: {
     alignItems: 'center',
-    backgroundColor: TEAL,
+    backgroundColor: BLACK,
     borderRadius: 12,
     height: 38,
     justifyContent: 'center',
     width: 38,
-    shadowColor: TEAL_DARK,
+    shadowColor: BLACK_DARK,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 8,
     elevation: 4,
   },
-  brand: { color: TEAL, fontSize: 14, fontWeight: '900', letterSpacing: 2 },
+  brand: { color: BLACK, fontSize: 14, fontWeight: '900', letterSpacing: 2 },
   card: {
     backgroundColor: '#fff',
     borderRadius: 20,
@@ -377,7 +383,7 @@ const styles = StyleSheet.create({
   },
   title: { color: INK, fontSize: 30, fontWeight: '800', lineHeight: 38 },
   subtitle: { color: MUTED, fontSize: 15, lineHeight: 22, marginTop: 8 },
-  switcher: { backgroundColor: '#eef4f2', borderRadius: 11, flexDirection: 'row', marginTop: 24, padding: 4 },
+  switcher: { backgroundColor: '#eeeeee', borderRadius: 11, flexDirection: 'row', marginTop: 24, padding: 4 },
   switchItem: { alignItems: 'center', borderRadius: 8, flex: 1, paddingVertical: 11 },
   switchActive: {
     backgroundColor: '#fff',
@@ -388,7 +394,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   switchText: { color: '#718080', fontSize: 14, fontWeight: '700' },
-  switchTextActive: { color: TEAL },
+  switchTextActive: { color: BLACK },
   label: { color: '#344b4d', fontSize: 13, fontWeight: '700', marginBottom: 8, marginTop: 18 },
   roleRow: { flexDirection: 'row', gap: 10 },
   roleCard: {
@@ -404,8 +410,8 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   roleCardSelected: {
-    backgroundColor: TEAL_SOFT,
-    borderColor: TEAL,
+    backgroundColor: BLACK_SOFT,
+    borderColor: BLACK,
   },
   roleIconWrap: {
     alignItems: 'center',
@@ -418,12 +424,12 @@ const styles = StyleSheet.create({
     width: 34,
   },
   roleIconWrapSelected: {
-    backgroundColor: TEAL,
-    borderColor: TEAL,
+    backgroundColor: BLACK,
+    borderColor: BLACK,
   },
   roleTextWrap: { flex: 1 },
   roleTitle: { color: INK, fontSize: 14, fontWeight: '800' },
-  roleTitleSelected: { color: TEAL_DARK },
+  roleTitleSelected: { color: BLACK_DARK },
   roleDesc: { color: MUTED, fontSize: 11, marginTop: 1 },
   roleCheck: { marginLeft: 2 },
   nameRow: { flexDirection: 'row', gap: 10 },
@@ -441,7 +447,7 @@ const styles = StyleSheet.create({
   },
   inputWrapFocused: {
     borderColor: BORDER_FOCUS,
-    shadowColor: TEAL,
+    shadowColor: BLACK,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.15,
     shadowRadius: 6,
@@ -450,14 +456,14 @@ const styles = StyleSheet.create({
   input: { color: INK, flex: 1, fontSize: 16, height: '100%' },
   button: {
     alignItems: 'center',
-    backgroundColor: TEAL,
+    backgroundColor: BLACK,
     borderRadius: 12,
     flexDirection: 'row',
     gap: 8,
     justifyContent: 'center',
     marginTop: 28,
     minHeight: 52,
-    shadowColor: TEAL_DARK,
+    shadowColor: BLACK_DARK,
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.25,
     shadowRadius: 12,
@@ -468,34 +474,34 @@ const styles = StyleSheet.create({
   pressed: { opacity: 0.88 },
   noticeBox: {
     alignItems: 'center',
-    backgroundColor: '#ecf9f2',
+    backgroundColor: '#f0f0f0',
     borderRadius: 10,
     flexDirection: 'row',
     gap: 8,
     marginTop: 16,
     padding: 12,
   },
-  notice: { color: '#167052', flex: 1, fontSize: 13, lineHeight: 19 },
+  notice: { color: '#111111', flex: 1, fontSize: 13, lineHeight: 19 },
   errorBox: {
     alignItems: 'center',
-    backgroundColor: '#fdecea',
+    backgroundColor: '#eeeeee',
     borderRadius: 10,
     flexDirection: 'row',
     gap: 8,
     marginTop: 16,
     padding: 12,
   },
-  error: { color: '#b42318', flex: 1, fontSize: 13, lineHeight: 19 },
+  error: { color: '#111111', flex: 1, fontSize: 13, lineHeight: 19 },
   footer: { color: '#819091', fontSize: 12, lineHeight: 18, marginTop: 22, textAlign: 'center' },
   signedIn: { alignItems: 'center', flex: 1, justifyContent: 'center', padding: 28 },
   welcome: { color: INK, fontSize: 28, fontWeight: '800', marginTop: 20 },
   signedEmail: { color: MUTED, fontSize: 16, marginTop: 8 },
   signOutButton: {
-    backgroundColor: TEAL_SOFT,
+    backgroundColor: BLACK_SOFT,
     marginTop: 32,
     paddingHorizontal: 22,
     shadowOpacity: 0,
     elevation: 0,
   },
-  signOutText: { color: TEAL, fontSize: 15, fontWeight: '800' },
+  signOutText: { color: BLACK, fontSize: 15, fontWeight: '800' },
 });
