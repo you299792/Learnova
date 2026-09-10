@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import type { AndroidSymbol } from 'expo-symbols';
+import { Image } from 'expo-image';
 import * as NavigationBar from 'expo-navigation-bar';
 import { router } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
-import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { SFSymbol } from 'sf-symbols-typescript';
 
@@ -26,6 +27,7 @@ type Subject = {
   id: string;
   title: string;
   description: string;
+  tutor: string;
   lessons: number;
   color: string;
   icon: SFSymbol;
@@ -37,6 +39,7 @@ const subjects: Subject[] = [
     id: 'math',
     title: 'Mathematics',
     description: 'Build confidence with numbers',
+    tutor: 'Maya Chen',
     lessons: 24,
     color: '#eeeeee',
     icon: 'function',
@@ -46,6 +49,7 @@ const subjects: Subject[] = [
     id: 'science',
     title: 'Science',
     description: 'Explore how the world works',
+    tutor: 'Maya Chen',
     lessons: 18,
     color: '#e8e8e8',
     icon: 'atom',
@@ -55,6 +59,7 @@ const subjects: Subject[] = [
     id: 'english',
     title: 'English',
     description: 'Find your voice in writing',
+    tutor: 'Theo Brooks',
     lessons: 16,
     color: '#f1f1f1',
     icon: 'text.book.closed',
@@ -64,6 +69,7 @@ const subjects: Subject[] = [
     id: 'history',
     title: 'History',
     description: 'Learn from stories of the past',
+    tutor: 'Jordan Lee',
     lessons: 12,
     color: '#e5e5e5',
     icon: 'building.columns',
@@ -73,6 +79,7 @@ const subjects: Subject[] = [
     id: 'coding',
     title: 'Coding',
     description: 'Make ideas come to life',
+    tutor: 'Sam Rivera',
     lessons: 20,
     color: '#ededed',
     icon: 'chevron.left.forwardslash.chevron.right',
@@ -82,6 +89,7 @@ const subjects: Subject[] = [
     id: 'languages',
     title: 'Languages',
     description: 'Connect with more of the world',
+    tutor: 'Jordan Lee',
     lessons: 14,
     color: '#f4f4f4',
     icon: 'bubble.left.and.bubble.right',
@@ -104,8 +112,13 @@ function Icon({
 }
 
 export default function StudentDashboard() {
-  const [selectedSubjects, setSelectedSubjects] = useState<string[]>(['math', 'coding']);
+  const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<Tab>('home');
+  const [searchQuery, setSearchQuery] = useState('');
+  const normalizedSearch = searchQuery.trim().toLowerCase();
+  const visibleSubjects = subjects.filter((subject) =>
+    `${subject.title} ${subject.description} ${subject.tutor}`.toLowerCase().includes(normalizedSearch),
+  );
 
   useEffect(() => {
     if (Platform.OS !== 'android') return;
@@ -141,8 +154,8 @@ export default function StudentDashboard() {
               <Icon ios="bell.fill" android="notifications" size={21} color="#fff" />
               <View style={styles.notificationDot} />
             </Pressable>
-            <Pressable accessibilityLabel="Profile" style={({ pressed }) => [styles.avatar, pressed && styles.pressed]}>
-              <Text style={styles.avatarText}>A</Text>
+            <Pressable accessibilityLabel="Profile" onPress={() => router.push('/profile')} style={({ pressed }) => [styles.avatar, pressed && styles.pressed]}>
+              <Image source={{ uri: 'https://i.scdn.co/image/ab67616d00001e028f33770d5cb6b7bbbd59686a' }} style={styles.avatarImage} />
             </Pressable>
           </View>
         </View>
@@ -158,6 +171,24 @@ export default function StudentDashboard() {
           </View>
         </View>
 
+        <View style={styles.searchBar}>
+          <Icon ios="magnifyingglass" android="search" size={19} color={MUTED} />
+          <TextInput
+            accessibilityLabel="Search subjects or tutor"
+            onChangeText={setSearchQuery}
+            placeholder="Search subjects or tutor"
+            placeholderTextColor="#8a8a8a"
+            returnKeyType="search"
+            style={styles.searchInput}
+            value={searchQuery}
+          />
+          {searchQuery.length > 0 && (
+            <Pressable accessibilityLabel="Clear search" onPress={() => setSearchQuery('')} style={styles.clearSearch}>
+              <Icon ios="xmark.circle.fill" android="cancel" size={18} color={MUTED} />
+            </Pressable>
+          )}
+        </View>
+
         <View style={styles.sectionHeading}>
           <View>
             <Text style={styles.sectionTitle}>Choose your subjects</Text>
@@ -167,7 +198,7 @@ export default function StudentDashboard() {
         </View>
 
         <View style={styles.subjectGrid}>
-          {subjects.map((subject) => {
+          {visibleSubjects.map((subject) => {
             const selected = selectedSubjects.includes(subject.id);
             return (
               <Pressable
@@ -191,6 +222,12 @@ export default function StudentDashboard() {
             );
           })}
         </View>
+        {visibleSubjects.length === 0 && (
+          <View style={styles.emptySearch}>
+            <Text style={styles.emptySearchTitle}>No subjects found</Text>
+            <Text style={styles.emptySearchText}>Try a different subject or tutor name.</Text>
+          </View>
+        )}
 
         <View style={styles.progressSection}>
           <View style={styles.progressHeader}>
@@ -206,11 +243,23 @@ export default function StudentDashboard() {
           <Text style={styles.progressHint}>Two more sessions to reach your weekly goal.</Text>
         </View>
 
-        <Pressable onPress={() => router.replace('/')} style={({ pressed }) => [styles.signOut, pressed && styles.pressed]}>
-          <Icon ios="arrow.left" android="arrow_back" size={15} color={MUTED} />
-          <Text style={styles.signOutText}>Back to sign in</Text>
-        </Pressable>
       </ScrollView>
+
+      <View style={styles.fixedNextArea}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityState={{ disabled: selectedSubjects.length === 0 }}
+          disabled={selectedSubjects.length === 0}
+          onPress={() => router.push('/schedule')}
+          style={({ pressed }) => [
+            styles.nextButton,
+            selectedSubjects.length === 0 && styles.nextButtonDisabled,
+            pressed && styles.pressed,
+          ]}>
+          <Text style={styles.nextButtonText}>Next</Text>
+          <Icon ios="arrow.right" android="arrow_forward" size={17} color="#fff" />
+        </Pressable>
+      </View>
 
       <View style={styles.bottomNav}>
         {tabs.map((tab) => {
@@ -221,7 +270,21 @@ export default function StudentDashboard() {
               accessibilityRole="tab"
               accessibilityState={{ selected: active }}
               accessibilityLabel={tab.label}
-              onPress={() => setActiveTab(tab.key)}
+              onPress={() => {
+                if (tab.key === 'schedule') {
+                  router.push('/schedule');
+                  return;
+                }
+                if (tab.key === 'files') {
+                  router.push('/files');
+                  return;
+                }
+                if (tab.key === 'menu') {
+                  router.push('/menu');
+                  return;
+                }
+                setActiveTab(tab.key);
+              }}
               style={({ pressed }) => [styles.tabButton, pressed && styles.pressed]}>
               <Icon ios={tab.ios} android={tab.android} size={25} color={active ? BLACK : MUTED} />
               <Text style={[styles.tabLabel, active && styles.tabLabelActive]}>{tab.label}</Text>
@@ -236,7 +299,7 @@ export default function StudentDashboard() {
 
 const styles = StyleSheet.create({
   safeArea: { backgroundColor: '#f5f5f5', flex: 1 },
-  content: { alignSelf: 'center', maxWidth: 920, paddingHorizontal: 16, paddingTop: 12, width: '100%' },
+  content: { alignSelf: 'center', maxWidth: 920, paddingBottom: 24, paddingHorizontal: 16, paddingTop: 12, width: '100%' },
   header: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', marginBottom: 24 },
   eyebrow: { color: BLACK, fontSize: 11, fontWeight: '800', letterSpacing: 1.4 },
   title: { color: INK, fontSize: 24, fontWeight: '800', marginTop: 5 },
@@ -244,18 +307,28 @@ const styles = StyleSheet.create({
   headerButton: { alignItems: 'center', backgroundColor: BLACK, borderColor: BLACK, borderRadius: 20, borderWidth: 1, elevation: 3, height: 40, justifyContent: 'center', position: 'relative', shadowColor: BLACK_DARK, shadowOffset: { height: 3, width: 0 }, shadowOpacity: 0.18, shadowRadius: 5, width: 40 },
   notificationDot: { backgroundColor: '#fff', borderColor: BLACK, borderRadius: 5, borderWidth: 2, height: 10, position: 'absolute', right: 1, top: 1, width: 10 },
   avatar: { alignItems: 'center', backgroundColor: BLACK, borderRadius: 21, elevation: 3, height: 42, justifyContent: 'center', shadowColor: BLACK_DARK, shadowOffset: { height: 3, width: 0 }, shadowOpacity: 0.18, shadowRadius: 5, width: 42 },
-  avatarText: { color: '#fff', fontSize: 16, fontWeight: '800' },
+  avatarImage: { borderRadius: 21, height: '100%', width: '100%' },
   welcomeCard: { alignItems: 'center', backgroundColor: BLACK_DARK, borderRadius: 20, flexDirection: 'row', justifyContent: 'space-between', marginBottom: 30, overflow: 'hidden', padding: 24 },
   welcomeCopy: { flex: 1, maxWidth: 550 },
   welcomeEyebrow: { color: '#c8c8c8', fontSize: 11, fontWeight: '800', letterSpacing: 1.3 },
   welcomeTitle: { color: '#fff', fontSize: 25, fontWeight: '800', lineHeight: 32, marginTop: 7 },
   welcomeDescription: { color: '#d0d0d0', fontSize: 14, lineHeight: 21, marginTop: 8 },
   welcomeIcon: { alignItems: 'center', backgroundColor: '#333333', borderRadius: 32, height: 64, justifyContent: 'center', marginLeft: 18, width: 64 },
+  searchBar: { alignItems: 'center', backgroundColor: '#fff', borderColor: BORDER, borderRadius: 14, borderWidth: 1, flexDirection: 'row', marginBottom: 26, paddingHorizontal: 14 },
+  searchInput: { color: INK, flex: 1, fontSize: 14, minHeight: 50, paddingHorizontal: 10 },
+  clearSearch: { padding: 4 },
   sectionHeading: { alignItems: 'flex-end', flexDirection: 'row', justifyContent: 'space-between', marginBottom: 14 },
   sectionTitle: { color: INK, fontSize: 20, fontWeight: '800' },
   sectionSubtitle: { color: MUTED, fontSize: 13, marginTop: 4 },
   selectedCount: { color: BLACK, fontSize: 12, fontWeight: '800' },
   subjectGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
+  emptySearch: { alignItems: 'center', backgroundColor: '#fff', borderRadius: 16, padding: 24 },
+  emptySearchTitle: { color: INK, fontSize: 15, fontWeight: '800' },
+  emptySearchText: { color: MUTED, fontSize: 12, marginTop: 5 },
+  nextButton: { alignItems: 'center', alignSelf: 'stretch', backgroundColor: BLACK, borderRadius: 14, flexDirection: 'row', gap: 10, justifyContent: 'center', marginTop: 20, minHeight: 58, paddingHorizontal: 28 },
+  nextButtonDisabled: { backgroundColor: '#b8b8b8' },
+  nextButtonText: { color: '#fff', fontSize: 16, fontWeight: '800' },
+  fixedNextArea: { backgroundColor: '#f5f5f5', borderTopColor: BORDER, borderTopWidth: 1, paddingHorizontal: 16, paddingVertical: 10 },
   subjectCard: { backgroundColor: '#fff', borderColor: BORDER, borderRadius: 16, borderWidth: 1, flexBasis: '45%', flexGrow: 1, minHeight: 160, minWidth: 0, padding: 16, position: 'relative' },
   subjectCardSelected: { borderColor: BLACK, borderWidth: 1.5 },
   subjectIcon: { alignItems: 'center', borderRadius: 12, height: 42, justifyContent: 'center', width: 42 },
@@ -273,8 +346,6 @@ const styles = StyleSheet.create({
   progressTrack: { backgroundColor: '#e5e5e5', borderRadius: 4, height: 8, marginTop: 18, overflow: 'hidden' },
   progressFill: { backgroundColor: BLACK, borderRadius: 4, height: '100%', width: '60%' },
   progressHint: { color: MUTED, fontSize: 12, marginTop: 9 },
-  signOut: { alignItems: 'center', alignSelf: 'center', flexDirection: 'row', gap: 7, marginTop: 24, padding: 8 },
-  signOutText: { color: MUTED, fontSize: 13, fontWeight: '700' },
   bottomNav: { alignItems: 'center', backgroundColor: '#fff', borderColor: BORDER, borderTopWidth: 1, flexDirection: 'row', justifyContent: 'space-between', paddingBottom: 8, paddingHorizontal: 8, paddingTop: 8 },
   tabButton: { alignItems: 'center', flex: 1, paddingHorizontal: 4, paddingTop: 2, position: 'relative' },
   tabLabel: { color: MUTED, fontSize: 12, fontWeight: '700', marginTop: 5 },
