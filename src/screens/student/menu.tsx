@@ -1,27 +1,18 @@
-import { useEffect } from 'react';
+import { useState } from 'react';
 import type { AndroidSymbol } from 'expo-symbols';
 import { Image } from 'expo-image';
-import * as NavigationBar from 'expo-navigation-bar';
 import { router } from 'expo-router';
-import { SymbolView } from 'expo-symbols';
-import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { SFSymbol } from 'sf-symbols-typescript';
+import { StudentBottomNav, StudentHeader, StudentIcon as Icon } from '@/components/student/student-ui';
 
 const BLACK = '#111111';
 const BLACK_DARK = '#000000';
 const INK = '#111111';
 const MUTED = '#666666';
 const BORDER = '#d6d6d6';
-
-type Tab = 'home' | 'schedule' | 'files' | 'menu';
-
-const tabs: { key: Tab; label: string; ios: SFSymbol; android: AndroidSymbol }[] = [
-  { key: 'home', label: 'Home', ios: 'house.fill', android: 'home' },
-  { key: 'schedule', label: 'Schedule', ios: 'calendar', android: 'event' },
-  { key: 'files', label: 'Files', ios: 'folder.fill', android: 'folder' },
-  { key: 'menu', label: 'Menu', ios: 'line.3.horizontal', android: 'menu' },
-];
+const ACCENT = '#FED701';
 
 type MenuItem = {
   title: string;
@@ -37,55 +28,31 @@ const menuItems: MenuItem[] = [
   { title: 'Help center', subtitle: 'Get answers about your learning space', ios: 'questionmark.circle', android: 'help_outline' },
 ];
 
-function Icon({
-  ios,
-  android,
-  size = 20,
-  color = BLACK,
-}: {
-  ios: SFSymbol;
-  android: AndroidSymbol;
-  size?: number;
-  color?: string;
-}) {
-  return <SymbolView name={{ ios, android, web: android }} size={size} tintColor={color} />;
-}
-
 export default function StudentMenu() {
-  useEffect(() => {
-    if (Platform.OS !== 'android') return;
-
-    void NavigationBar.setVisibilityAsync('hidden');
-    return () => {
-      void NavigationBar.setVisibilityAsync('visible');
-    };
-  }, []);
+  const [logoutVisible, setLogoutVisible] = useState(false);
 
   function signOut() {
+    setLogoutVisible(true);
+  }
+
+  function confirmSignOut() {
+    setLogoutVisible(false);
     router.replace('/');
   }
 
   return (
     <SafeAreaView edges={['top']} style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.header}>
-          <View>
-            <Text style={styles.eyebrow}>YOUR LEARNING SPACE</Text>
-            <Text style={styles.title}>Menu</Text>
-          </View>
-          <Pressable accessibilityLabel="Profile" onPress={() => router.push('/profile')} style={({ pressed }) => [styles.avatar, pressed && styles.pressed]}>
-            <Image source={{ uri: 'https://i.scdn.co/image/ab67616d00001e028f33770d5cb6b7bbbd59686a' }} style={styles.avatarImage} />
-          </Pressable>
-        </View>
+        <StudentHeader showProfile={false} title="Menu" />
 
         <Pressable onPress={() => router.push('/profile')} style={({ pressed }) => [styles.profileCard, pressed && styles.pressed]}>
           <View style={styles.largeAvatar}>
             <Image source={{ uri: 'https://i.scdn.co/image/ab67616d00001e028f33770d5cb6b7bbbd59686a' }} style={styles.largeAvatarImage} />
           </View>
           <View style={styles.profileCopy}>
-            <Text style={styles.profileName}>Alex Morgan</Text>
+            <Text style={styles.profileName}>Batu Khan</Text>
             <Text style={styles.profileSubtitle}>Student account</Text>
-            <Text style={styles.profileEmail}>alex.morgan@example.com</Text>
+            <Text style={styles.profileEmail}>batu_khan@gmail.com</Text>
           </View>
           <Icon ios="chevron.right" android="chevron_right" size={18} color="#fff" />
         </Pressable>
@@ -135,28 +102,35 @@ export default function StudentMenu() {
         <Text style={styles.version}>LEARNOVA · VERSION 1.0</Text>
       </ScrollView>
 
-      <View style={styles.bottomNav}>
-        {tabs.map((tab) => {
-          const active = tab.key === 'menu';
-          return (
-            <Pressable
-              key={tab.key}
-              accessibilityRole="tab"
-              accessibilityState={{ selected: active }}
-              accessibilityLabel={tab.label}
-              onPress={() => {
-                if (tab.key === 'home') router.replace('/student');
-                if (tab.key === 'schedule') router.push('/schedule');
-                if (tab.key === 'files') router.push('/files');
-              }}
-              style={({ pressed }) => [styles.tabButton, pressed && styles.pressed]}>
-              <Icon ios={tab.ios} android={tab.android} size={25} color={active ? BLACK : MUTED} />
-              <Text style={[styles.tabLabel, active && styles.tabLabelActive]}>{tab.label}</Text>
-              {active && <View style={styles.tabIndicator} />}
-            </Pressable>
-          );
-        })}
-      </View>
+      <StudentBottomNav activeTab="menu" />
+
+      <Modal
+        accessibilityViewIsModal
+        animationType="fade"
+        onRequestClose={() => setLogoutVisible(false)}
+        transparent
+        visible={logoutVisible}>
+        <View style={styles.modalBackdrop}>
+          <View style={styles.confirmationCard}>
+            <Text style={styles.confirmationTitle}>Log out?</Text>
+            <Text style={styles.confirmationMessage}>You will return to the sign in screen.</Text>
+            <View style={styles.confirmationActions}>
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => setLogoutVisible(false)}
+                style={({ pressed }) => [styles.cancelButton, pressed && styles.pressed]}>
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </Pressable>
+              <Pressable
+                accessibilityRole="button"
+                onPress={confirmSignOut}
+                style={({ pressed }) => [styles.confirmButton, pressed && styles.pressed]}>
+                <Text style={styles.confirmButtonText}>Log out</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -182,7 +156,7 @@ const styles = StyleSheet.create({
   progressTitle: { color: INK, fontSize: 16, fontWeight: '800', marginTop: 5 },
   progressValue: { color: BLACK, fontSize: 18, fontWeight: '800' },
   progressTrack: { backgroundColor: '#e5e5e5', borderRadius: 4, height: 8, marginTop: 17, overflow: 'hidden' },
-  progressFill: { backgroundColor: BLACK, borderRadius: 4, height: '100%', width: '60%' },
+  progressFill: { backgroundColor: ACCENT, borderRadius: 4, height: '100%', width: '60%' },
   progressHint: { color: MUTED, fontSize: 12, marginTop: 9 },
   sectionTitle: { color: INK, fontSize: 20, fontWeight: '800', marginBottom: 13, marginTop: 30 },
   menuList: { gap: 10 },
@@ -193,6 +167,15 @@ const styles = StyleSheet.create({
   menuSubtitle: { color: MUTED, fontSize: 11, marginTop: 4 },
   logoutIcon: { alignItems: 'center', backgroundColor: BLACK, borderRadius: 12, height: 42, justifyContent: 'center', width: 42 },
   version: { alignSelf: 'center', color: '#999', fontSize: 10, fontWeight: '800', letterSpacing: 1, marginTop: 18 },
+  modalBackdrop: { alignItems: 'center', backgroundColor: 'rgba(0, 0, 0, 0.48)', flex: 1, justifyContent: 'center', padding: 24 },
+  confirmationCard: { backgroundColor: '#fff', borderRadius: 22, maxWidth: 380, padding: 24, width: '100%' },
+  confirmationTitle: { color: INK, fontSize: 21, fontWeight: '800' },
+  confirmationMessage: { color: MUTED, fontSize: 13, lineHeight: 19, marginTop: 7 },
+  confirmationActions: { flexDirection: 'row', gap: 10, marginTop: 24 },
+  cancelButton: { alignItems: 'center', borderColor: BORDER, borderRadius: 13, borderWidth: 1, flex: 1, justifyContent: 'center', minHeight: 48 },
+  cancelButtonText: { color: INK, fontSize: 13, fontWeight: '800' },
+  confirmButton: { alignItems: 'center', backgroundColor: BLACK, borderRadius: 13, flex: 1, justifyContent: 'center', minHeight: 48 },
+  confirmButtonText: { color: '#fff', fontSize: 13, fontWeight: '800' },
   bottomNav: { alignItems: 'center', backgroundColor: '#fff', borderColor: BORDER, borderTopWidth: 1, flexDirection: 'row', justifyContent: 'space-between', paddingBottom: 8, paddingHorizontal: 8, paddingTop: 8 },
   tabButton: { alignItems: 'center', flex: 1, paddingHorizontal: 4, paddingTop: 2, position: 'relative' },
   tabLabel: { color: MUTED, fontSize: 12, fontWeight: '700', marginTop: 5 },
