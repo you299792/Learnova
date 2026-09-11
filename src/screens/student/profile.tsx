@@ -1,18 +1,15 @@
-import { useEffect } from 'react';
-import type { AndroidSymbol } from 'expo-symbols';
 import { Image } from 'expo-image';
-import * as NavigationBar from 'expo-navigation-bar';
 import { router } from 'expo-router';
-import { SymbolView } from 'expo-symbols';
-import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import type { SFSymbol } from 'sf-symbols-typescript';
+import { StudentIcon as Icon } from '@/components/student/student-ui';
 
 const BLACK = '#111111';
 const BLACK_DARK = '#000000';
 const INK = '#111111';
 const MUTED = '#666666';
 const BORDER = '#d6d6d6';
+const ACCENT = '#FED701';
 
 const subjects = [
   { name: 'Mathematics', tutor: 'Maya Chen', color: '#e7e7e7' },
@@ -20,30 +17,7 @@ const subjects = [
   { name: 'Intro to coding', tutor: 'Sam Rivera', color: '#e4e4e4' },
 ];
 
-function Icon({
-  ios,
-  android,
-  size = 20,
-  color = BLACK,
-}: {
-  ios: SFSymbol;
-  android: AndroidSymbol;
-  size?: number;
-  color?: string;
-}) {
-  return <SymbolView name={{ ios, android, web: android }} size={size} tintColor={color} />;
-}
-
 export default function StudentProfile() {
-  useEffect(() => {
-    if (Platform.OS !== 'android') return;
-
-    void NavigationBar.setVisibilityAsync('hidden');
-    return () => {
-      void NavigationBar.setVisibilityAsync('visible');
-    };
-  }, []);
-
   return (
     <SafeAreaView edges={['top']} style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
@@ -130,7 +104,7 @@ const styles = StyleSheet.create({
   name: { color: '#fff', fontSize: 22, fontWeight: '800', marginTop: 14 },
   role: { color: '#c7c7c7', fontSize: 13, marginTop: 4 },
   email: { color: '#999', fontSize: 12, marginTop: 5 },
-  editButton: { alignItems: 'center', backgroundColor: '#fff', borderRadius: 18, flexDirection: 'row', gap: 7, marginTop: 16, paddingHorizontal: 15, paddingVertical: 9 },
+  editButton: { alignItems: 'center', backgroundColor: ACCENT, borderRadius: 18, flexDirection: 'row', gap: 7, marginTop: 16, paddingHorizontal: 15, paddingVertical: 9 },
   editButtonText: { color: BLACK, fontSize: 12, fontWeight: '800' },
   sectionHeading: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', marginBottom: 13, marginTop: 28 },
   sectionTitle: { color: INK, fontSize: 20, fontWeight: '800' },
