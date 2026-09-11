@@ -1,29 +1,19 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { AndroidSymbol } from 'expo-symbols';
-import { Image } from 'expo-image';
-import * as NavigationBar from 'expo-navigation-bar';
-import { router } from 'expo-router';
-import { SymbolView } from 'expo-symbols';
-import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { SFSymbol } from 'sf-symbols-typescript';
+import { StudentBottomNav, StudentIcon as Icon } from '@/components/student/student-ui';
 
 const BLACK = '#111111';
 const BLACK_DARK = '#000000';
 const INK = '#111111';
 const MUTED = '#666666';
 const BORDER = '#d6d6d6';
+const ACCENT = '#FED701';
 
-type Tab = 'home' | 'schedule' | 'files' | 'menu';
 type Filter = 'All' | 'Math' | 'Science' | 'English' | 'Coding';
 type FileType = 'PDF' | 'DOC' | 'IMAGE' | 'LINK';
-
-const tabs: { key: Tab; label: string; ios: SFSymbol; android: AndroidSymbol }[] = [
-  { key: 'home', label: 'Home', ios: 'house.fill', android: 'home' },
-  { key: 'schedule', label: 'Schedule', ios: 'calendar', android: 'event' },
-  { key: 'files', label: 'Files', ios: 'folder.fill', android: 'folder' },
-  { key: 'menu', label: 'Menu', ios: 'line.3.horizontal', android: 'menu' },
-];
 
 const filters: Filter[] = ['All', 'Math', 'Science', 'English', 'Coding'];
 
@@ -48,20 +38,6 @@ const tutorFiles: TutorFile[] = [
   { id: 'practice', name: 'Extra practice problems', subject: 'Math', tutor: 'Maya Chen', uploaded: 'Sep 4', size: '720 KB', type: 'LINK', ios: 'link', android: 'link', color: '#eeeeee' },
 ];
 
-function Icon({
-  ios,
-  android,
-  size = 20,
-  color = BLACK,
-}: {
-  ios: SFSymbol;
-  android: AndroidSymbol;
-  size?: number;
-  color?: string;
-}) {
-  return <SymbolView name={{ ios, android, web: android }} size={size} tintColor={color} />;
-}
-
 export default function StudentFiles() {
   const [selectedFilter, setSelectedFilter] = useState<Filter>('All');
   const visibleFiles = useMemo(
@@ -69,32 +45,14 @@ export default function StudentFiles() {
     [selectedFilter],
   );
 
-  useEffect(() => {
-    if (Platform.OS !== 'android') return;
-
-    void NavigationBar.setVisibilityAsync('hidden');
-    return () => {
-      void NavigationBar.setVisibilityAsync('visible');
-    };
-  }, []);
-
   return (
     <SafeAreaView edges={['top']} style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.header}>
+        <View style={styles.pageHeader}>
           <View>
-            <Text style={styles.eyebrow}>YOUR LEARNING SPACE</Text>
-            <Text style={styles.title}>Files</Text>
-          </View>
-          <Pressable accessibilityLabel="Profile" onPress={() => router.push('/profile')} style={({ pressed }) => [styles.avatar, pressed && styles.pressed]}>
-            <Image source={{ uri: 'https://i.scdn.co/image/ab67616d00001e028f33770d5cb6b7bbbd59686a' }} style={styles.avatarImage} />
-          </Pressable>
-        </View>
-
-        <View style={styles.introRow}>
-          <View>
-            <Text style={styles.sectionTitle}>Tutor resources</Text>
-            <Text style={styles.sectionSubtitle}>Everything your tutors have shared</Text>
+            <Text style={styles.pageEyebrow}>YOUR LEARNING SPACE</Text>
+            <Text style={styles.pageTitle}>Files</Text>
+            <Text style={styles.pageSubtitle}>Everything your tutors have shared</Text>
           </View>
           <View style={styles.folderIcon}>
             <Icon ios="folder.fill" android="folder" size={20} color="#fff" />
@@ -156,28 +114,7 @@ export default function StudentFiles() {
         </View>
       </ScrollView>
 
-      <View style={styles.bottomNav}>
-        {tabs.map((tab) => {
-          const active = tab.key === 'files';
-          return (
-            <Pressable
-              key={tab.key}
-              accessibilityRole="tab"
-              accessibilityState={{ selected: active }}
-              accessibilityLabel={tab.label}
-              onPress={() => {
-                if (tab.key === 'home') router.replace('/student');
-                if (tab.key === 'schedule') router.push('/schedule');
-                if (tab.key === 'menu') router.push('/menu');
-              }}
-              style={({ pressed }) => [styles.tabButton, pressed && styles.pressed]}>
-              <Icon ios={tab.ios} android={tab.android} size={25} color={active ? BLACK : MUTED} />
-              <Text style={[styles.tabLabel, active && styles.tabLabelActive]}>{tab.label}</Text>
-              {active && <View style={styles.tabIndicator} />}
-            </Pressable>
-          );
-        })}
-      </View>
+      <StudentBottomNav activeTab="files" />
     </SafeAreaView>
   );
 }
@@ -190,7 +127,10 @@ const styles = StyleSheet.create({
   title: { color: INK, fontSize: 28, fontWeight: '800', marginTop: 5 },
   avatar: { alignItems: 'center', backgroundColor: BLACK, borderRadius: 21, elevation: 3, height: 42, justifyContent: 'center', shadowColor: BLACK_DARK, shadowOffset: { height: 3, width: 0 }, shadowOpacity: 0.18, shadowRadius: 5, width: 42 },
   avatarImage: { borderRadius: 21, height: '100%', width: '100%' },
-  introRow: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
+  pageHeader: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', marginBottom: 22 },
+  pageEyebrow: { color: BLACK, fontSize: 11, fontWeight: '800', letterSpacing: 1.4 },
+  pageTitle: { color: INK, fontSize: 28, fontWeight: '800', marginTop: 5 },
+  pageSubtitle: { color: MUTED, fontSize: 13, marginTop: 5 },
   sectionTitle: { color: INK, fontSize: 20, fontWeight: '800' },
   sectionSubtitle: { color: MUTED, fontSize: 13, marginTop: 4 },
   folderIcon: { alignItems: 'center', backgroundColor: BLACK, borderRadius: 20, height: 40, justifyContent: 'center', width: 40 },
@@ -204,9 +144,9 @@ const styles = StyleSheet.create({
   storageHint: { color: '#aaa', fontSize: 12, marginTop: 9 },
   filterRow: { gap: 8, paddingBottom: 2, paddingTop: 22 },
   filterButton: { backgroundColor: '#fff', borderColor: BORDER, borderRadius: 18, borderWidth: 1, paddingHorizontal: 15, paddingVertical: 9 },
-  filterButtonSelected: { backgroundColor: BLACK, borderColor: BLACK },
+  filterButtonSelected: { backgroundColor: ACCENT, borderColor: ACCENT },
   filterText: { color: MUTED, fontSize: 12, fontWeight: '800' },
-  filterTextSelected: { color: '#fff' },
+  filterTextSelected: { color: BLACK },
   sectionHeading: { alignItems: 'flex-end', flexDirection: 'row', justifyContent: 'space-between', marginBottom: 13, marginTop: 28 },
   fileCount: { color: BLACK, fontSize: 12, fontWeight: '800' },
   fileList: { gap: 10 },
