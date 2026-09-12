@@ -1,7 +1,7 @@
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
-import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useMemo, useState } from 'react';
+import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { STUDENT_COLORS, StudentIcon } from '@/components/student/student-ui';
@@ -18,13 +18,51 @@ const subjectNames: Record<string, string> = {
 
 export function TutorSelectionView({ selectedSubjectIds }: { selectedSubjectIds: string[] }) {
   const [selectedTutorId, setSelectedTutorId] = useState<string | null>(null);
+  const [profileTutorId, setProfileTutorId] = useState<string | null>(null);
+  const [requestTutorId, setRequestTutorId] = useState<string | null>(null);
+  const [selectedDay, setSelectedDay] = useState<string | null>(null);
+  const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const selectedSubjects = selectedSubjectIds.map((id) => subjectNames[id]).filter(Boolean);
+  const profileTutor = tutors.find((tutor) => tutor.id === profileTutorId) ?? null;
+  const requestTutor = tutors.find((tutor) => tutor.id === requestTutorId) ?? null;
+  const dateOptions = useMemo(() => {
+    const today = new Date();
+    const dayOffsets: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+    return requestTutor?.weeklyAvailability.map((slot) => {
+      const offset = (dayOffsets[slot.day] - today.getDay() + 7) % 7 || 7;
+      const date = new Date(today);
+      date.setDate(today.getDate() + offset);
+      return { ...slot, date: date.getDate().toString(), month: date.toLocaleDateString('en-US', { month: 'short' }) };
+    }) ?? [];
+  }, [requestTutor]);
+
+  const openProfile = (tutorId: string) => {
+    setSelectedTutorId(tutorId);
+    setProfileTutorId(tutorId);
+  };
+
+  const openRequest = () => {
+    if (!profileTutor) return;
+    setProfileTutorId(null);
+    setRequestTutorId(profileTutor.id);
+    setSelectedDay(null);
+    setSelectedTime(null);
+  };
+
+  const sendRequest = () => {
+    if (!requestTutor || !selectedDay || !selectedTime) return;
+    setRequestTutorId(null);
+    router.replace({
+      pathname: '/schedule',
+      params: { pendingDay: selectedDay.toLowerCase(), pendingTime: selectedTime, pendingTutor: requestTutor.name, pendingInitials: requestTutor.initials, requestSent: '1' },
+    });
+  };
 
   return (
     <SafeAreaView edges={['top']} style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.topBar}>
-          <Pressable accessibilityLabel="Go back" onPress={() => router.back()} style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}>
+          <Pressable accessibilityLabel="Go back" onPress={() => (router.canGoBack() ? router.back() : router.replace('/student'))} style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}>
             <StudentIcon ios="chevron.left" android="arrow_back" size={20} />
           </Pressable>
           <View style={styles.stepIndicator}>
@@ -67,7 +105,7 @@ export function TutorSelectionView({ selectedSubjectIds }: { selectedSubjectIds:
                 key={tutor.id}
                 accessibilityRole="radio"
                 accessibilityState={{ checked: selected }}
-                onPress={() => setSelectedTutorId(tutor.id)}
+                onPress={() => openProfile(tutor.id)}
                 style={({ pressed }) => [styles.tutorCard, selected && styles.tutorCardSelected, pressed && styles.pressed]}>
                 <View style={styles.cardTopRow}>
                   <View style={styles.avatarFrame}>
@@ -123,12 +161,89 @@ export function TutorSelectionView({ selectedSubjectIds }: { selectedSubjectIds:
           accessibilityRole="button"
           accessibilityState={{ disabled: selectedTutorId === null }}
           disabled={selectedTutorId === null}
-          onPress={() => router.push('/schedule')}
+          onPress={() => selectedTutorId && openProfile(selectedTutorId)}
           style={({ pressed }) => [styles.continueButton, selectedTutorId === null && styles.continueButtonDisabled, pressed && styles.pressed]}>
           <Text style={styles.continueText}>Continue to schedule</Text>
           <StudentIcon ios="arrow.right" android="arrow_forward" size={17} color="#fff" />
         </Pressable>
       </View>
+
+      <Modal animationType="slide" onRequestClose={() => setProfileTutorId(null)} visible={profileTutor !== null}>
+        {profileTutor && (
+          <SafeAreaView style={styles.modalSafeArea}>
+            <ScrollView contentContainerStyle={styles.modalContent} showsVerticalScrollIndicator={false}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Tutor profile</Text>
+                <Pressable accessibilityLabel="Close profile" onPress={() => setProfileTutorId(null)} style={styles.closeButton}>
+                  <StudentIcon ios="xmark" android="close" size={18} />
+                </Pressable>
+              </View>
+              <View style={styles.profileSummary}>
+                <Image accessibilityLabel={`${profileTutor.name} profile`} contentFit="cover" source={{ uri: profileTutor.avatar }} style={styles.profileAvatar} />
+                <Text style={styles.profileName}>{profileTutor.name}</Text>
+                <Text style={styles.profileRole}>Learnova tutor · {profileTutor.rating} rating</Text>
+                <View style={styles.subjectRow}>
+                  {profileTutor.subjects.map((subject) => <View key={subject} style={styles.subjectPill}><Text style={styles.subjectPillText}>{subject}</Text></View>)}
+                </View>
+              </View>
+              <Text style={styles.modalSectionTitle}>About {profileTutor.name.split(' ')[0]}</Text>
+              <Text style={styles.profileBio}>{profileTutor.bio}</Text>
+              <Text style={styles.modalSectionTitle}>Weekly availability</Text>
+              {profileTutor.weeklyAvailability.map((slot) => (
+                <View key={slot.day} style={styles.profileAvailabilityRow}>
+                  <Text style={styles.profileAvailabilityDay}>{slot.day}</Text>
+                  <Text style={styles.profileAvailabilityTime}>{slot.time}</Text>
+                </View>
+              ))}
+            </ScrollView>
+            <View style={styles.modalFooter}>
+              <Pressable accessibilityRole="button" onPress={openRequest} style={({ pressed }) => [styles.requestButton, pressed && styles.pressed]}>
+                <Text style={styles.requestButtonText}>Request this tutor</Text>
+                <StudentIcon ios="arrow.right" android="arrow_forward" size={17} color="#fff" />
+              </Pressable>
+            </View>
+          </SafeAreaView>
+        )}
+      </Modal>
+
+      <Modal animationType="slide" onRequestClose={() => setRequestTutorId(null)} visible={requestTutor !== null}>
+        {requestTutor && (
+          <SafeAreaView style={styles.modalSafeArea}>
+            <ScrollView contentContainerStyle={styles.modalContent} showsVerticalScrollIndicator={false}>
+              <View style={styles.modalHeader}>
+                <View>
+                  <Text style={styles.modalTitle}>Choose your availability</Text>
+                  <Text style={styles.modalSubtitle}>When would you like to learn with {requestTutor.name}?</Text>
+                </View>
+                <Pressable accessibilityLabel="Close availability" onPress={() => setRequestTutorId(null)} style={styles.closeButton}>
+                  <StudentIcon ios="xmark" android="close" size={18} />
+                </Pressable>
+              </View>
+              <Text style={styles.modalSectionTitle}>Select a date</Text>
+              <View style={styles.optionList}>
+                {dateOptions.map((option) => {
+                  const selected = selectedDay === option.day;
+                  return <Pressable key={option.day} onPress={() => setSelectedDay(option.day)} style={[styles.optionButton, selected && styles.optionButtonSelected]}><Text style={[styles.optionLabel, selected && styles.optionLabelSelected]}>{option.day}, {option.month} {option.date}</Text></Pressable>;
+                })}
+              </View>
+              <Text style={styles.modalSectionTitle}>Select a time</Text>
+              <View style={styles.optionList}>
+                {requestTutor.weeklyAvailability.filter((slot) => slot.day === selectedDay).map((slot) => {
+                  const selected = selectedTime === slot.time;
+                  return <Pressable key={slot.time} onPress={() => setSelectedTime(slot.time)} style={[styles.optionButton, selected && styles.optionButtonSelected]}><Text style={[styles.optionLabel, selected && styles.optionLabelSelected]}>{slot.time}</Text></Pressable>;
+                })}
+              </View>
+              {!selectedDay && <Text style={styles.helperText}>Choose a date to see available times.</Text>}
+            </ScrollView>
+            <View style={styles.modalFooter}>
+              <Pressable accessibilityRole="button" accessibilityState={{ disabled: !selectedDay || !selectedTime }} disabled={!selectedDay || !selectedTime} onPress={sendRequest} style={({ pressed }) => [styles.requestButton, (!selectedDay || !selectedTime) && styles.requestButtonDisabled, pressed && styles.pressed]}>
+                <Text style={styles.requestButtonText}>Send request</Text>
+                <StudentIcon ios="paperplane.fill" android="send" size={17} color="#fff" />
+              </Pressable>
+            </View>
+          </SafeAreaView>
+        )}
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -182,5 +297,30 @@ const styles = StyleSheet.create({
   continueButton: { alignItems: 'center', alignSelf: 'center', backgroundColor: STUDENT_COLORS.black, borderRadius: 14, flexDirection: 'row', gap: 10, justifyContent: 'center', maxWidth: 728, minHeight: 56, paddingHorizontal: 24, width: '100%' },
   continueButtonDisabled: { backgroundColor: '#b8b8b8' },
   continueText: { color: '#fff', fontSize: 15, fontWeight: '800' },
+  modalSafeArea: { backgroundColor: STUDENT_COLORS.background, flex: 1 },
+  modalContent: { alignSelf: 'center', maxWidth: 760, padding: 20, paddingBottom: 32, width: '100%' },
+  modalHeader: { alignItems: 'flex-start', flexDirection: 'row', justifyContent: 'space-between', marginBottom: 22 },
+  modalTitle: { color: STUDENT_COLORS.ink, fontSize: 25, fontWeight: '800', maxWidth: 290 },
+  modalSubtitle: { color: STUDENT_COLORS.muted, fontSize: 13, lineHeight: 19, marginTop: 6, maxWidth: 290 },
+  closeButton: { alignItems: 'center', backgroundColor: '#fff', borderColor: STUDENT_COLORS.border, borderRadius: 20, borderWidth: 1, height: 40, justifyContent: 'center', width: 40 },
+  profileSummary: { alignItems: 'center', backgroundColor: STUDENT_COLORS.black, borderRadius: 20, padding: 22 },
+  profileAvatar: { borderRadius: 42, height: 84, width: 84 },
+  profileName: { color: '#fff', fontSize: 22, fontWeight: '800', marginTop: 12 },
+  profileRole: { color: '#aaa', fontSize: 13, marginTop: 4 },
+  modalSectionTitle: { color: STUDENT_COLORS.ink, fontSize: 18, fontWeight: '800', marginBottom: 12, marginTop: 24 },
+  profileBio: { color: STUDENT_COLORS.muted, fontSize: 14, lineHeight: 21 },
+  profileAvailabilityRow: { alignItems: 'center', backgroundColor: '#fff', borderBottomColor: '#ededed', borderBottomWidth: 1, flexDirection: 'row', minHeight: 50, paddingHorizontal: 14 },
+  profileAvailabilityDay: { color: STUDENT_COLORS.ink, fontSize: 13, fontWeight: '800', width: 58 },
+  profileAvailabilityTime: { color: STUDENT_COLORS.muted, fontSize: 13 },
+  modalFooter: { backgroundColor: STUDENT_COLORS.background, borderTopColor: STUDENT_COLORS.border, borderTopWidth: 1, padding: 16 },
+  requestButton: { alignItems: 'center', alignSelf: 'center', backgroundColor: STUDENT_COLORS.black, borderRadius: 14, flexDirection: 'row', gap: 10, justifyContent: 'center', minHeight: 54, paddingHorizontal: 20, width: '100%' },
+  requestButtonDisabled: { backgroundColor: '#b8b8b8' },
+  requestButtonText: { color: '#fff', fontSize: 15, fontWeight: '800' },
+  optionList: { gap: 9 },
+  optionButton: { backgroundColor: '#fff', borderColor: STUDENT_COLORS.border, borderRadius: 12, borderWidth: 1, minHeight: 50, justifyContent: 'center', paddingHorizontal: 15 },
+  optionButtonSelected: { backgroundColor: STUDENT_COLORS.accent, borderColor: STUDENT_COLORS.accent },
+  optionLabel: { color: STUDENT_COLORS.ink, fontSize: 14, fontWeight: '700' },
+  optionLabelSelected: { fontWeight: '800' },
+  helperText: { color: STUDENT_COLORS.muted, fontSize: 13, marginTop: 12 },
   pressed: { opacity: 0.82 },
 });
