@@ -22,7 +22,7 @@ export default function StudentProfile() {
     <SafeAreaView edges={['top']} style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.topBar}>
-          <Pressable accessibilityLabel="Go back" onPress={() => router.back()} style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}>
+          <Pressable accessibilityLabel="Go back" onPress={() => (router.canGoBack() ? router.back() : router.replace('/student'))} style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}>
             <Icon ios="chevron.left" android="arrow_back" size={20} />
           </Pressable>
           <Text style={styles.topBarTitle}>Profile</Text>
