@@ -11,7 +11,7 @@ export function TutorProfileView({ tutor }: { tutor: Tutor }) {
     <SafeAreaView edges={['top']} style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.topBar}>
-          <Pressable accessibilityLabel="Go back" onPress={() => router.back()} style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}>
+          <Pressable accessibilityLabel="Go back" onPress={() => (router.canGoBack() ? router.back() : router.replace('/tutors'))} style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}>
             <StudentIcon ios="chevron.left" android="arrow_back" size={20} />
           </Pressable>
           <Text style={styles.topBarTitle}>Tutor profile</Text>
@@ -135,7 +135,7 @@ export function TutorProfileView({ tutor }: { tutor: Tutor }) {
       </ScrollView>
 
       <View style={styles.footer}>
-        <Pressable onPress={() => router.back()} style={({ pressed }) => [styles.backToTutorsButton, pressed && styles.pressed]}>
+        <Pressable onPress={() => (router.canGoBack() ? router.back() : router.replace('/tutors'))} style={({ pressed }) => [styles.backToTutorsButton, pressed && styles.pressed]}>
           <Text style={styles.backToTutorsText}>Back to tutors</Text>
         </Pressable>
       </View>
