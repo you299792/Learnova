@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StudentBottomNav, StudentIcon as Icon } from '@/components/student/student-ui';
@@ -155,6 +155,11 @@ export default function StudentSchedule() {
     setSelectedSession(null);
   };
 
+  const messageSelectedTutor = () => {
+    setSelectedSession(null);
+    router.push('/messages');
+  };
+
   return (
     <SafeAreaView edges={['top']} style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
@@ -275,8 +280,8 @@ export default function StudentSchedule() {
 
       <Modal animationType="slide" transparent visible={selectedSession !== null} onRequestClose={() => setSelectedSession(null)}>
         {selectedSession && (
-          <View style={styles.detailOverlay}>
-            <View style={styles.detailCard}>
+          <Pressable onPress={() => setSelectedSession(null)} style={styles.detailOverlay}>
+            <View onStartShouldSetResponder={() => true} style={styles.detailCard}>
               <View style={styles.detailHeader}>
                 <Text style={styles.detailEyebrow}>SESSION DETAILS</Text>
                 <Pressable accessibilityLabel="Close session details" onPress={() => setSelectedSession(null)} style={styles.detailCloseButton}>
@@ -312,6 +317,10 @@ export default function StudentSchedule() {
                   <Text style={styles.detailRowValue}>{selectedSession.duration}</Text>
                 </View>
               </View>
+              <Pressable accessibilityRole="button" onPress={messageSelectedTutor} style={({ pressed }) => [styles.messageButton, pressed && styles.pressed]}>
+                <Icon ios="bubble.left.fill" android="chat_bubble" size={17} color="#fff" />
+                <Text style={styles.messageButtonText}>Message tutor</Text>
+              </Pressable>
               <Pressable accessibilityRole="button" onPress={modifySelectedSession} style={({ pressed }) => [styles.modifyButton, pressed && styles.pressed]}>
                 <Icon ios="pencil" android="edit" size={17} color={BLACK} />
                 <Text style={styles.modifyButtonText}>Modify request</Text>
@@ -321,13 +330,13 @@ export default function StudentSchedule() {
                 <Text style={styles.cancelButtonText}>Cancel session</Text>
               </Pressable>
             </View>
-          </View>
+          </Pressable>
         )}
       </Modal>
 
       <Modal animationType="slide" transparent visible={showModify} onRequestClose={() => setShowModify(false)}>
-        <View style={styles.detailOverlay}>
-          <View style={styles.detailCard}>
+        <Pressable onPress={() => setShowModify(false)} style={styles.detailOverlay}>
+          <View onStartShouldSetResponder={() => true} style={styles.detailCard}>
             <View style={styles.detailHeader}>
               <View>
                 <Text style={styles.detailEyebrow}>MODIFY SESSION</Text>
@@ -355,7 +364,7 @@ export default function StudentSchedule() {
               <Text style={styles.saveModifyButtonText}>Save changes</Text>
             </Pressable>
           </View>
-        </View>
+        </Pressable>
       </Modal>
 
       <StudentBottomNav activeTab="schedule" />
@@ -437,6 +446,8 @@ const styles = StyleSheet.create({
   detailRow: { alignItems: 'center', borderBottomColor: '#ededed', borderBottomWidth: 1, flexDirection: 'row', minHeight: 52 },
   detailRowLabel: { color: MUTED, flex: 1, fontSize: 13, marginLeft: 10 },
   detailRowValue: { color: INK, fontSize: 13, fontWeight: '800' },
+  messageButton: { alignItems: 'center', backgroundColor: BLACK, borderRadius: 13, flexDirection: 'row', gap: 8, justifyContent: 'center', marginTop: 22, minHeight: 50 },
+  messageButtonText: { color: '#fff', fontSize: 14, fontWeight: '800' },
   cancelButton: { alignItems: 'center', borderColor: '#f0c4c0', borderRadius: 13, borderWidth: 1, flexDirection: 'row', gap: 8, justifyContent: 'center', marginTop: 22, minHeight: 50 },
   cancelButtonText: { color: '#b42318', fontSize: 14, fontWeight: '800' },
   modifyButton: { alignItems: 'center', backgroundColor: ACCENT, borderRadius: 13, flexDirection: 'row', gap: 8, justifyContent: 'center', marginTop: 22, minHeight: 50 },
