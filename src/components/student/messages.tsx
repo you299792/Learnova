@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Image } from 'expo-image';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { router } from 'expo-router';
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { tutors } from '@/components/student/tutor-data';
@@ -42,8 +43,7 @@ export function MessagesView() {
 
   function openMessage(message: Message) {
     setReadIds((current) => current.includes(message.id) ? current : [...current, message.id]);
-    const tutor = tutors.find((item) => item.id === message.tutorId);
-    Alert.alert(tutor?.name ?? 'Tutor message', 'Conversation view will be available when messaging is connected.');
+    router.push({ pathname: '/conversation', params: { tutorId: message.tutorId, messageId: message.id } });
   }
 
   return (
