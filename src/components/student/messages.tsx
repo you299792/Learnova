@@ -50,6 +50,9 @@ export function MessagesView() {
     <SafeAreaView edges={['top']} style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.pageHeader}>
+          <Pressable accessibilityLabel="Go back" onPress={() => (router.canGoBack() ? router.back() : router.replace('/menu'))} style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}>
+            <StudentIcon ios="chevron.left" android="arrow_back" size={20} />
+          </Pressable>
           <View>
             <Text style={styles.eyebrow}>YOUR LEARNING SPACE</Text>
             <Text style={styles.title}>Messages</Text>
@@ -158,6 +161,7 @@ const styles = StyleSheet.create({
   safeArea: { backgroundColor: '#f5f5f5', flex: 1 },
   content: { alignSelf: 'center', maxWidth: 920, paddingBottom: 28, paddingHorizontal: 16, paddingTop: 12, width: '100%' },
   pageHeader: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', marginBottom: 22 },
+  backButton: { alignItems: 'center', backgroundColor: '#fff', borderColor: STUDENT_COLORS.border, borderRadius: 20, borderWidth: 1, height: 40, justifyContent: 'center', marginRight: 12, width: 40 },
   eyebrow: { color: STUDENT_COLORS.black, fontSize: 11, fontWeight: '800', letterSpacing: 1.4 },
   title: { color: STUDENT_COLORS.ink, fontSize: 28, fontWeight: '800', marginTop: 5 },
   subtitle: { color: STUDENT_COLORS.muted, fontSize: 13, marginTop: 5 },
