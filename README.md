@@ -35,5 +35,5 @@ The backend relies on a normalized PostgreSQL schema designed for scalability an
 
 1. Clone the repository:
    ```bash
-   git clone [https://github.com/yourusername/learnova.git](https://github.com/yourusername/learnova.git)
+   git clone [https://github.com/yourusername/learnova.git](https://github.com/you299792/learnova.git)
    cd learnova
