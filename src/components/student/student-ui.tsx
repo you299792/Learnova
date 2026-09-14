@@ -52,7 +52,7 @@ export function StudentAvatar({ large = false }: { large?: boolean }) {
 export function StudentHeader({ title, showActions = false, showProfile = true }: { title: string; showActions?: boolean; showProfile?: boolean }) {
   return (
     <View style={styles.header}>
-      <View>
+      <View style={styles.headerCopy}>
         <Text style={styles.eyebrow}>YOUR LEARNING SPACE</Text>
         <Text style={styles.title}>{title}</Text>
       </View>
@@ -61,7 +61,7 @@ export function StudentHeader({ title, showActions = false, showProfile = true }
           <Pressable accessibilityLabel="Messages" onPress={() => router.push('/messages')} style={({ pressed }) => [styles.headerButton, pressed && styles.pressed]}>
             <StudentIcon ios="bubble.left.fill" android="chat_bubble" size={21} color="#fff" />
           </Pressable>
-          <Pressable accessibilityLabel="Notifications" style={({ pressed }) => [styles.headerButton, pressed && styles.pressed]}>
+          <Pressable accessibilityLabel="Notifications" onPress={() => router.push('/notifications')} style={({ pressed }) => [styles.headerButton, pressed && styles.pressed]}>
             <StudentIcon ios="bell.fill" android="notifications" size={21} color="#fff" />
             <View style={styles.notificationDot} />
           </Pressable>
@@ -120,8 +120,9 @@ export const studentScreenStyles = StyleSheet.create({
 
 const styles = StyleSheet.create({
   header: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', marginBottom: 28 },
+  headerCopy: { flex: 1, minWidth: 0, paddingRight: 12 },
   eyebrow: { color: STUDENT_COLORS.black, fontSize: 11, fontWeight: '800', letterSpacing: 1.4 },
-  title: { color: STUDENT_COLORS.ink, fontSize: 28, fontWeight: '800', marginTop: 5 },
+  title: { color: STUDENT_COLORS.ink, flexShrink: 1, fontSize: 28, fontWeight: '800', marginTop: 5 },
   headerActions: { alignItems: 'center', flexDirection: 'row', gap: 7 },
   headerButton: { alignItems: 'center', backgroundColor: STUDENT_COLORS.black, borderColor: STUDENT_COLORS.black, borderRadius: 20, borderWidth: 1, elevation: 3, height: 40, justifyContent: 'center', position: 'relative', shadowColor: STUDENT_COLORS.blackDark, shadowOffset: { height: 3, width: 0 }, shadowOpacity: 0.18, shadowRadius: 5, width: 40 },
   notificationDot: { backgroundColor: STUDENT_COLORS.accent, borderColor: STUDENT_COLORS.black, borderRadius: 5, borderWidth: 2, height: 10, position: 'absolute', right: 1, top: 1, width: 10 },
