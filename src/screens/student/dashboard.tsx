@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { AndroidSymbol } from 'expo-symbols';
 import { router } from 'expo-router';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { SFSymbol } from 'sf-symbols-typescript';
 import { StudentBottomNav, StudentHeader, StudentIcon as Icon } from '@/components/student/student-ui';
@@ -88,6 +88,8 @@ const subjects: Subject[] = [
 ];
 
 export default function StudentDashboard() {
+  const { width } = useWindowDimensions();
+  const compactLayout = width < 380;
   const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const normalizedSearch = searchQuery.trim().toLowerCase();
@@ -108,13 +110,13 @@ export default function StudentDashboard() {
         showsVerticalScrollIndicator={false}>
         <StudentHeader title="Good morning, Batu." showActions />
 
-        <View style={styles.welcomeCard}>
+        <View style={[styles.welcomeCard, compactLayout && styles.welcomeCardCompact]}>
           <View style={styles.welcomeCopy}>
             <Text style={styles.welcomeEyebrow}>READY WHEN YOU ARE</Text>
-            <Text style={styles.welcomeTitle}>What would you like to learn today?</Text>
+            <Text style={[styles.welcomeTitle, compactLayout && styles.welcomeTitleCompact]}>What would you like to learn today?</Text>
             <Text style={styles.welcomeDescription}>Pick a few subjects and we&apos;ll shape your study plan around them.</Text>
           </View>
-          <View style={styles.welcomeIcon}>
+          <View style={[styles.welcomeIcon, compactLayout && styles.welcomeIconCompact]}>
             <Icon ios="sparkles" android="auto_awesome" color="#fff" size={26} />
           </View>
         </View>
@@ -137,12 +139,12 @@ export default function StudentDashboard() {
           )}
         </View>
 
-        <View style={styles.sectionHeading}>
+        <View style={[styles.sectionHeading, compactLayout && styles.sectionHeadingCompact]}>
           <View>
             <Text style={styles.sectionTitle}>Choose your subjects</Text>
             <Text style={styles.sectionSubtitle}>You can change these any time</Text>
           </View>
-          <Text style={styles.selectedCount}>{selectedSubjects.length} selected</Text>
+          <Text style={[styles.selectedCount, compactLayout && styles.selectedCountCompact]}>{selectedSubjects.length} selected</Text>
         </View>
 
         <View style={styles.subjectGrid}>
@@ -154,7 +156,7 @@ export default function StudentDashboard() {
                 accessibilityRole="checkbox"
                 accessibilityState={{ checked: selected }}
                 onPress={() => toggleSubject(subject.id)}
-                style={({ pressed }) => [styles.subjectCard, selected && styles.subjectCardSelected, pressed && styles.pressed]}>
+                style={({ pressed }) => [styles.subjectCard, compactLayout && styles.subjectCardCompact, selected && styles.subjectCardSelected, pressed && styles.pressed]}>
                 <View style={[styles.subjectIcon, { backgroundColor: subject.color }]}>
                   <Icon ios={subject.icon} android={subject.androidIcon} size={21} />
                 </View>
@@ -178,12 +180,12 @@ export default function StudentDashboard() {
         )}
 
         <View style={styles.progressSection}>
-          <View style={styles.progressHeader}>
+          <View style={[styles.progressHeader, compactLayout && styles.progressHeaderCompact]}>
             <View>
               <Text style={styles.progressEyebrow}>THIS WEEK</Text>
               <Text style={styles.progressTitle}>Keep your momentum going</Text>
             </View>
-            <Text style={styles.progressValue}>3 / 5</Text>
+            <Text style={[styles.progressValue, compactLayout && styles.progressValueCompact]}>3 / 5</Text>
           </View>
           <View style={styles.progressTrack}>
             <View style={styles.progressFill} />
@@ -226,18 +228,23 @@ const styles = StyleSheet.create({
   avatar: { alignItems: 'center', backgroundColor: BLACK, borderRadius: 21, elevation: 3, height: 42, justifyContent: 'center', shadowColor: BLACK_DARK, shadowOffset: { height: 3, width: 0 }, shadowOpacity: 0.18, shadowRadius: 5, width: 42 },
   avatarImage: { borderRadius: 21, height: '100%', width: '100%' },
   welcomeCard: { alignItems: 'center', backgroundColor: BLACK_DARK, borderRadius: 20, flexDirection: 'row', justifyContent: 'space-between', marginBottom: 30, overflow: 'hidden', padding: 24 },
+  welcomeCardCompact: { alignItems: 'flex-start', flexDirection: 'column', padding: 20 },
   welcomeCopy: { flex: 1, maxWidth: 550 },
   welcomeEyebrow: { color: '#c8c8c8', fontSize: 11, fontWeight: '800', letterSpacing: 1.3 },
   welcomeTitle: { color: '#fff', fontSize: 25, fontWeight: '800', lineHeight: 32, marginTop: 7 },
+  welcomeTitleCompact: { fontSize: 22, lineHeight: 28 },
   welcomeDescription: { color: '#d0d0d0', fontSize: 14, lineHeight: 21, marginTop: 8 },
   welcomeIcon: { alignItems: 'center', backgroundColor: '#333333', borderRadius: 32, height: 64, justifyContent: 'center', marginLeft: 18, width: 64 },
+  welcomeIconCompact: { marginLeft: 0, marginTop: 16 },
   searchBar: { alignItems: 'center', backgroundColor: '#fff', borderColor: BORDER, borderRadius: 14, borderWidth: 1, flexDirection: 'row', marginBottom: 26, paddingHorizontal: 14 },
   searchInput: { color: INK, flex: 1, fontSize: 14, minHeight: 50, paddingHorizontal: 10 },
   clearSearch: { padding: 4 },
   sectionHeading: { alignItems: 'flex-end', flexDirection: 'row', justifyContent: 'space-between', marginBottom: 14 },
+  sectionHeadingCompact: { alignItems: 'flex-start', flexWrap: 'wrap' },
   sectionTitle: { color: INK, fontSize: 20, fontWeight: '800' },
   sectionSubtitle: { color: MUTED, fontSize: 13, marginTop: 4 },
   selectedCount: { color: BLACK, fontSize: 12, fontWeight: '800' },
+  selectedCountCompact: { marginTop: 8, width: '100%' },
   subjectGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   emptySearch: { alignItems: 'center', backgroundColor: '#fff', borderRadius: 16, padding: 24 },
   emptySearchTitle: { color: INK, fontSize: 15, fontWeight: '800' },
@@ -247,6 +254,7 @@ const styles = StyleSheet.create({
   nextButtonText: { color: '#fff', fontSize: 16, fontWeight: '800' },
   fixedNextArea: { backgroundColor: '#f5f5f5', borderTopColor: BORDER, borderTopWidth: 1, paddingHorizontal: 16, paddingVertical: 10 },
   subjectCard: { backgroundColor: '#fff', borderColor: BORDER, borderRadius: 16, borderWidth: 1, flexBasis: '45%', flexGrow: 1, minHeight: 160, minWidth: 0, padding: 16, position: 'relative' },
+  subjectCardCompact: { flexBasis: '100%', minHeight: 140 },
   subjectCardSelected: { borderColor: BLACK, borderWidth: 1.5, shadowColor: ACCENT, shadowOffset: { height: 2, width: 0 }, shadowOpacity: 0.4, shadowRadius: 0 },
   subjectIcon: { alignItems: 'center', borderRadius: 12, height: 42, justifyContent: 'center', width: 42 },
   subjectCardBody: { paddingRight: 8 },
@@ -257,9 +265,11 @@ const styles = StyleSheet.create({
   checkSelected: { backgroundColor: ACCENT, borderColor: ACCENT },
   progressSection: { backgroundColor: '#fff', borderRadius: 16, marginTop: 30, padding: 20 },
   progressHeader: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
+  progressHeaderCompact: { alignItems: 'flex-start', flexWrap: 'wrap' },
   progressEyebrow: { color: BLACK, fontSize: 10, fontWeight: '800', letterSpacing: 1.2 },
   progressTitle: { color: INK, fontSize: 16, fontWeight: '800', marginTop: 5 },
   progressValue: { color: BLACK, fontSize: 18, fontWeight: '800' },
+  progressValueCompact: { marginTop: 4 },
   progressTrack: { backgroundColor: '#e5e5e5', borderRadius: 4, height: 8, marginTop: 18, overflow: 'hidden' },
   progressFill: { backgroundColor: ACCENT, borderRadius: 4, height: '100%', width: '60%' },
   progressHint: { color: MUTED, fontSize: 12, marginTop: 9 },
