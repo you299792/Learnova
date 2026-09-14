@@ -41,7 +41,8 @@ export default function StudentProfile() {
           <Text style={styles.name}>Batu Khan</Text>
           <Text style={styles.role}>Student account</Text>
           <Text style={styles.email}>batu_khan@gmail.com</Text>
-          <Pressable style={({ pressed }) => [styles.editButton, pressed && styles.pressed]}>
+          <Text style={styles.bio}>Curious learner building better habits through peer tutoring.</Text>
+          <Pressable onPress={() => router.push('/edit-profile')} style={({ pressed }) => [styles.editButton, pressed && styles.pressed]}>
             <Icon ios="pencil" android="edit" size={15} color={BLACK} />
             <Text style={styles.editButtonText}>Edit profile</Text>
           </Pressable>
@@ -104,6 +105,7 @@ const styles = StyleSheet.create({
   name: { color: '#fff', fontSize: 22, fontWeight: '800', marginTop: 14 },
   role: { color: '#c7c7c7', fontSize: 13, marginTop: 4 },
   email: { color: '#999', fontSize: 12, marginTop: 5 },
+  bio: { color: '#d6d6d6', fontSize: 13, lineHeight: 19, marginTop: 12, maxWidth: 420, textAlign: 'center' },
   editButton: { alignItems: 'center', backgroundColor: ACCENT, borderRadius: 18, flexDirection: 'row', gap: 7, marginTop: 16, paddingHorizontal: 15, paddingVertical: 9 },
   editButtonText: { color: BLACK, fontSize: 12, fontWeight: '800' },
   sectionHeading: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', marginBottom: 13, marginTop: 28 },
