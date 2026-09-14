@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Alert, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { tutors } from '@/components/student/tutor-data';
 import { STUDENT_COLORS, StudentIcon } from '@/components/student/student-ui';
@@ -36,6 +36,7 @@ function currentTime() {
 }
 
 export default function StudentConversation() {
+  const insets = useSafeAreaInsets();
   const { tutorId, messageId } = useLocalSearchParams<{ tutorId?: string; messageId?: string }>();
   const tutor = tutors.find((item) => item.id === tutorId) ?? tutors[0];
   const [draft, setDraft] = useState('');
@@ -69,7 +70,7 @@ export default function StudentConversation() {
 
   return (
     <SafeAreaView edges={['top']} style={styles.safeArea}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.screen}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.screen}>
         <View style={styles.header}>
           <Pressable accessibilityLabel="Go back to messages" onPress={() => router.back()} style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}>
             <StudentIcon ios="chevron.left" android="arrow_back" size={20} />
@@ -124,7 +125,7 @@ export default function StudentConversation() {
           ))}
         </ScrollView>
 
-        <View style={styles.composerArea}>
+        <View style={[styles.composerArea, { paddingBottom: Math.max(insets.bottom, 10) }]}>
           <View style={styles.composer}>
             <Pressable accessibilityLabel="Send a picture" onPress={sendPicture} style={({ pressed }) => [styles.composerButton, pressed && styles.pressed]}>
               <StudentIcon ios="paperclip" android="attach_file" size={20} color={STUDENT_COLORS.muted} />
