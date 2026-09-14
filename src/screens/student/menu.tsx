@@ -74,7 +74,20 @@ export default function StudentMenu() {
         <Text style={styles.sectionTitle}>Account & support</Text>
         <View style={styles.menuList}>
           {menuItems.map((item) => (
-            <Pressable key={item.title} onPress={item.title === 'My profile' ? () => router.push('/profile') : undefined} style={({ pressed }) => [styles.menuItem, pressed && styles.pressed]}>
+            <Pressable
+              key={item.title}
+              onPress={
+                item.title === 'My profile'
+                  ? () => router.push('/profile')
+                  : item.title === 'Notifications'
+                    ? () => router.push('/notifications')
+                    : item.title === 'Settings'
+                      ? () => router.push('/settings')
+                      : item.title === 'Help center'
+                        ? () => router.push('/help')
+                    : undefined
+              }
+              style={({ pressed }) => [styles.menuItem, pressed && styles.pressed]}>
               <View style={styles.menuIcon}>
                 <Icon ios={item.ios} android={item.android} size={20} />
               </View>
