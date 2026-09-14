@@ -13,6 +13,7 @@ import {
   Text,
   TextInput,
   View,
+  useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -30,6 +31,12 @@ const BORDER_FOCUS = '#111111';
 const INK = '#111111';
 const MUTED = '#666666';
 
+const recentAccounts: { firstName: string; lastName: string; email: string; role: Role; initials: string }[] = [
+  { firstName: 'Batu', lastName: 'Khan', email: 'batu.khan@example.com', role: 'student', initials: 'BK' },
+  { firstName: 'Maya', lastName: 'Chen', email: 'maya.chen@example.com', role: 'tutor', initials: 'MC' },
+  { firstName: 'Sofia', lastName: 'Rivera', email: 'sofia.rivera@example.com', role: 'student', initials: 'SR' },
+];
+
 function Icon({
   ios,
   android,
@@ -46,6 +53,8 @@ function Icon({
 
 export default function AuthScreen() {
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
+  const compactLayout = width < 380;
   const [mode, setMode] = useState<Mode>('signIn');
   const [role, setRole] = useState<Role>('student');
   const [firstName, setFirstName] = useState('');
@@ -146,7 +155,7 @@ export default function AuthScreen() {
             <Icon ios="graduationcap.fill" android="school" color="#fff" size={26} />
           </View>
           <Text style={styles.brand}>LEARNOVA</Text>
-          <Text style={styles.welcome}>You're all set.</Text>
+          <Text style={styles.welcome}>You&apos;re all set.</Text>
           <Text style={styles.signedEmail}>{signedInEmail}</Text>
           <Pressable onPress={signOut} style={({ pressed }) => [styles.button, styles.signOutButton, pressed && styles.pressed]}>
             <Icon ios="rectangle.portrait.and.arrow.right" android="logout" color={BLACK} size={16} />
@@ -176,9 +185,9 @@ export default function AuthScreen() {
             <Text style={styles.brand}>LEARNOVA</Text>
           </View>
 
-          <View style={styles.card}>
-            <Text style={styles.title}>{mode === 'signIn' ? 'Welcome back.' : 'Start learning together.'}</Text>
-            <Text style={styles.subtitle}>
+          <View style={[styles.card, compactLayout && styles.cardCompact]}>
+            <Text style={[styles.title, compactLayout && styles.titleCompact]}>{mode === 'signIn' ? 'Welcome back.' : 'Start learning together.'}</Text>
+            <Text style={[styles.subtitle, compactLayout && styles.subtitleCompact]}>
               {mode === 'signIn' ? 'Sign in to continue your tutoring journey.' : 'Create your peer tutoring account in a minute.'}
             </Text>
 
@@ -192,7 +201,7 @@ export default function AuthScreen() {
             </View>
 
             <Text style={styles.label}>I am joining as</Text>
-            <View style={styles.roleRow}>
+            <View style={[styles.roleRow, compactLayout && styles.roleRowCompact]}>
               {(
                 [
                   { key: 'student', title: 'Student', desc: 'Get help', ios: 'book.fill', android: 'auto_stories' },
@@ -204,7 +213,7 @@ export default function AuthScreen() {
                   <Pressable
                     key={option.key}
                     onPress={() => setRole(option.key)}
-                    style={[styles.roleCard, selected && styles.roleCardSelected]}>
+                    style={[styles.roleCard, compactLayout && styles.roleCardCompact, selected && styles.roleCardSelected]}>
                     <View style={[styles.roleIconWrap, selected && styles.roleIconWrapSelected]}>
                       <Icon ios={option.ios} android={option.android} color={selected ? '#fff' : BLACK} size={18} />
                     </View>
@@ -223,7 +232,7 @@ export default function AuthScreen() {
             </View>
 
             {mode === 'signUp' && (
-              <View style={styles.nameRow}>
+              <View style={[styles.nameRow, compactLayout && styles.nameRowCompact]}>
                 <View style={styles.nameField}>
                   <Text style={styles.label}>First name</Text>
                   <View style={[styles.inputWrap, focusedField === 'firstName' && styles.inputWrapFocused]}>
@@ -311,6 +320,12 @@ export default function AuthScreen() {
               )}
             </Pressable>
 
+            {mode === 'signIn' && (
+              <Pressable style={({ pressed }) => [styles.guestButton, pressed && styles.pressed]}>
+                <Text style={styles.guestButtonText}>Continue as guest</Text>
+              </Pressable>
+            )}
+
             {notice && (
               <View style={styles.noticeBox}>
                 <Icon ios="checkmark.circle.fill" android="check_circle" color="#111111" size={15} />
@@ -325,7 +340,37 @@ export default function AuthScreen() {
             )}
           </View>
 
-          <Text style={styles.footer}>By continuing, you agree to Learnova's terms and privacy policy.</Text>
+          <View style={styles.recentAccounts}>
+            <View style={styles.recentAccountsHeader}>
+              <Text style={styles.recentAccountsTitle}>Recently logged in accounts</Text>
+              
+            </View>
+            {recentAccounts.map((account) => (
+              <Pressable
+                key={account.email}
+                onPress={() => {
+                  setMode('signUp');
+                  setFirstName(account.firstName);
+                  setLastName(account.lastName);
+                  setEmail(account.email);
+                  setRole(account.role);
+                }}
+                style={({ pressed }) => [styles.recentAccount, pressed && styles.pressed]}>
+                <View style={styles.recentAccountInitials}>
+                  <Text style={styles.recentAccountInitialsText}>{account.initials}</Text>
+                </View>
+                <View style={styles.recentAccountCopy}>
+                  <Text style={styles.recentAccountName}>{account.firstName} {account.lastName}</Text>
+                  <Text style={styles.recentAccountEmail}>{account.email}</Text>
+                </View>
+                <View style={[styles.accountRole, account.role === 'tutor' && styles.tutorRole]}>
+                  <Text style={styles.accountRoleText}>{account.role === 'tutor' ? 'Tutor' : 'Student'}</Text>
+                </View>
+              </Pressable>
+            ))}
+          </View>
+
+          <Text style={styles.footer}>By continuing, you agree to Learnova&apos;s terms and privacy policy.</Text>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -355,7 +400,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#eeeeee',
     opacity: 0.5,
   },
-  content: { width: '100%', maxWidth: 560, alignSelf: 'center', padding: 24, paddingBottom: 48 },
+  content: {
+    width: '100%',
+    maxWidth: 560,
+    alignSelf: 'center',
+    flexGrow: 1,
+    justifyContent: 'center',
+    padding: 24,
+    paddingBottom: 48,
+  },
   brandRow: { alignItems: 'center', flexDirection: 'row', gap: 10, marginBottom: 24 },
   brandMark: {
     alignItems: 'center',
@@ -381,8 +434,11 @@ const styles = StyleSheet.create({
     shadowRadius: 24,
     elevation: 3,
   },
+  cardCompact: { padding: 16 },
   title: { color: INK, fontSize: 30, fontWeight: '800', lineHeight: 38 },
+  titleCompact: { fontSize: 26, lineHeight: 32 },
   subtitle: { color: MUTED, fontSize: 15, lineHeight: 22, marginTop: 8 },
+  subtitleCompact: { fontSize: 14, lineHeight: 20 },
   switcher: { backgroundColor: '#eeeeee', borderRadius: 11, flexDirection: 'row', marginTop: 24, padding: 4 },
   switchItem: { alignItems: 'center', borderRadius: 8, flex: 1, paddingVertical: 11 },
   switchActive: {
@@ -395,8 +451,22 @@ const styles = StyleSheet.create({
   },
   switchText: { color: '#718080', fontSize: 14, fontWeight: '700' },
   switchTextActive: { color: BLACK },
+  recentAccounts: { backgroundColor: '#f7f7f7', borderColor: BORDER, borderRadius: 14, borderWidth: 1, marginTop: 18, padding: 12 },
+  recentAccountsHeader: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
+  recentAccountsTitle: { color: INK, fontSize: 12, fontWeight: '800' },
+  recentAccountsHint: { color: MUTED, fontSize: 10, fontWeight: '700' },
+  recentAccount: { alignItems: 'center', backgroundColor: '#fff', borderColor: '#e4e4e4', borderRadius: 10, borderWidth: 1, flexDirection: 'row', marginTop: 7, minHeight: 52, paddingHorizontal: 9 },
+  recentAccountInitials: { alignItems: 'center', backgroundColor: BLACK, borderRadius: 17, height: 34, justifyContent: 'center', width: 34 },
+  recentAccountInitialsText: { color: '#fff', fontSize: 10, fontWeight: '800' },
+  recentAccountCopy: { flex: 1, marginHorizontal: 9 },
+  recentAccountName: { color: INK, fontSize: 12, fontWeight: '800' },
+  recentAccountEmail: { color: MUTED, fontSize: 10, marginTop: 2 },
+  accountRole: { backgroundColor: '#eeeeee', borderRadius: 10, paddingHorizontal: 8, paddingVertical: 5 },
+  tutorRole: { backgroundColor: '#ffe86b' },
+  accountRoleText: { color: BLACK, fontSize: 9, fontWeight: '800' },
   label: { color: '#344b4d', fontSize: 13, fontWeight: '700', marginBottom: 8, marginTop: 18 },
   roleRow: { flexDirection: 'row', gap: 10 },
+  roleRowCompact: { flexDirection: 'column' },
   roleCard: {
     alignItems: 'center',
     backgroundColor: '#fbfdfc',
@@ -409,6 +479,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 12,
   },
+  roleCardCompact: { flex: 0, width: '100%' },
   roleCardSelected: {
     backgroundColor: BLACK_SOFT,
     borderColor: BLACK,
@@ -433,6 +504,7 @@ const styles = StyleSheet.create({
   roleDesc: { color: MUTED, fontSize: 11, marginTop: 1 },
   roleCheck: { marginLeft: 2 },
   nameRow: { flexDirection: 'row', gap: 10 },
+  nameRowCompact: { flexDirection: 'column', gap: 0 },
   nameField: { flex: 1 },
   inputWrap: {
     alignItems: 'center',
@@ -470,6 +542,16 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   buttonText: { color: '#fff', fontSize: 15, fontWeight: '800' },
+  guestButton: {
+    alignItems: 'center',
+    borderColor: BORDER,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    justifyContent: 'center',
+    marginTop: 12,
+    minHeight: 50,
+  },
+  guestButtonText: { color: INK, fontSize: 14, fontWeight: '800' },
   disabled: { opacity: 0.65 },
   pressed: { opacity: 0.88 },
   noticeBox: {
