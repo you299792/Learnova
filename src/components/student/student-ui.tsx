@@ -18,11 +18,12 @@ export const STUDENT_COLORS = {
 
 export const STUDENT_AVATAR_URI = 'https://i.scdn.co/image/ab67616d00001e028f33770d5cb6b7bbbd59686a';
 
-export type StudentTab = 'home' | 'schedule' | 'files' | 'menu';
+export type StudentTab = 'home' | 'schedule' | 'request' | 'files' | 'menu';
 
 export const STUDENT_TABS: { key: StudentTab; label: string; ios: SFSymbol; android: AndroidSymbol }[] = [
   { key: 'home', label: 'Home', ios: 'house.fill', android: 'home' },
   { key: 'schedule', label: 'Schedule', ios: 'calendar', android: 'event' },
+  { key: 'request', label: 'Ask', ios: 'plus', android: 'add' },
   { key: 'files', label: 'Files', ios: 'folder.fill', android: 'folder' },
   { key: 'menu', label: 'Menu', ios: 'line.3.horizontal', android: 'menu' },
 ];
@@ -98,13 +99,22 @@ export function StudentBottomNav({ activeTab }: { activeTab: StudentTab }) {
             onPress={() => {
               if (tab.key === 'home') router.replace('/student');
               if (tab.key === 'schedule') router.push('/schedule');
+              if (tab.key === 'request') router.push('/tutor-request');
               if (tab.key === 'files') router.push('/files');
               if (tab.key === 'menu') router.push('/menu');
             }}
-            style={({ pressed }) => [styles.tabButton, pressed && styles.pressed]}>
-            <StudentIcon ios={tab.ios} android={tab.android} size={25} color={active ? STUDENT_COLORS.black : STUDENT_COLORS.muted} />
-            <Text style={[styles.tabLabel, active && styles.tabLabelActive]}>{tab.label}</Text>
-            {active && <View style={styles.tabIndicator} />}
+            style={({ pressed }) => [styles.tabButton, tab.key === 'request' && styles.requestTabButton, pressed && styles.pressed]}>
+            {tab.key === 'request' ? (
+              <View style={styles.requestButton}>
+                <StudentIcon ios={tab.ios} android={tab.android} size={31} color={STUDENT_COLORS.black} />
+              </View>
+            ) : (
+              <>
+                <StudentIcon ios={tab.ios} android={tab.android} size={25} color={active ? STUDENT_COLORS.black : STUDENT_COLORS.muted} />
+                <Text style={[styles.tabLabel, active && styles.tabLabelActive]}>{tab.label}</Text>
+                {active && <View style={styles.tabIndicator} />}
+              </>
+            )}
           </Pressable>
         );
       })}
@@ -133,6 +143,8 @@ const styles = StyleSheet.create({
   largeAvatarImage: { height: '100%', width: '100%' },
   bottomNav: { alignItems: 'center', backgroundColor: '#fff', borderColor: STUDENT_COLORS.border, borderTopWidth: 1, flexDirection: 'row', justifyContent: 'space-between', paddingBottom: 8, paddingHorizontal: 8, paddingTop: 8 },
   tabButton: { alignItems: 'center', flex: 1, paddingHorizontal: 4, paddingTop: 2, position: 'relative' },
+  requestTabButton: { paddingTop: 0 },
+  requestButton: { alignItems: 'center', backgroundColor: STUDENT_COLORS.accent, borderColor: STUDENT_COLORS.black, borderRadius: 8, borderWidth: 2, height: 44, justifyContent: 'center', width: 54 },
   tabLabel: { color: STUDENT_COLORS.muted, fontSize: 12, fontWeight: '700', marginTop: 5 },
   tabLabelActive: { color: STUDENT_COLORS.black },
   tabIndicator: { backgroundColor: STUDENT_COLORS.accent, borderRadius: 2, bottom: -10, height: 3, position: 'absolute', width: 20 },
